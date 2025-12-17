@@ -1,0 +1,18 @@
+<h2>Add product</h2>
+<form id="form">
+    <label for="name">Name</label><input type="text" id="name" name="name"/>
+    <label for="price">Price</label><input type="number" id="price" name="price"/>
+    <input type="submit" value="Send"/>
+</form>
+
+<h2>Delete product</h2>
+<form id="deleteForm">
+    <label for="deleteId">ID to delete</label><input type="number" id="deleteId" name="deleteId"/>
+    <input type="submit" value="Delete"/>
+</form>
+
+<p id="products"></p>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/index.js"></script>
+
