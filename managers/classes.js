@@ -19,7 +19,7 @@ export class ProductManager{
         try{
 
             //leo los datos guardados en el archivo
-            let productsArray = this.model.find({})
+            let productsArray = await this.model.find({})
 
             //chequeo que no exista el producto con el mismo codigo
             let codeObjectExists = productsArray.find(item => item.code === product.code)
