@@ -41,7 +41,7 @@ export class ProductManager{
         try{
             return await this.model.find({}) 
         }catch(err){
-            throw new err
+            throw err
         }
     }
     
@@ -101,7 +101,7 @@ export class CartManager{
             return await this.model.find({}) 
 
         }catch(err){
-            throw new err
+            throw err
         }
     }
 

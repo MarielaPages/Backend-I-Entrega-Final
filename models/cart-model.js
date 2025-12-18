@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 
 const carritosSchema = new mongoose.Schema(
-    {
-        cartID: {type: mongoose.Schema.Types.ObjectId, required: true},  
+    { 
         products: [{
             product: {type: mongoose.Schema.Types.ObjectId, required: true}, 
             quantity: {type: Number}
