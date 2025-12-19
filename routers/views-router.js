@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import fs from 'fs'
+import { productManager } from '../managers/classes.js'
 
 const router = Router()
 
-router.get("/", (req, res) => {
-    const products = JSON.parse(fs.readFileSync("./products.json", "utf-8"));
+router.get("/", async (req, res) => {
+    const products = await productManager.getProducts();
     res.render('home', { products });
 });
 

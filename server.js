@@ -2,9 +2,10 @@ import express from 'express'
 import handlebars from 'express-handlebars'
 import viewsRouter from './routers/views-router.js'
 import { Server } from 'socket.io'
-import fs from "fs"
 import productsRouter from './routers/products-router.js'
 import cartsRouter from './routers/carts-router.js'
+import {initMongoDB} from './config/connection.js'
+import { productManager } from './managers/classes.js'
 
 //Creo mi app servidor
 const app = express()
@@ -23,6 +24,11 @@ app.use('/', viewsRouter)
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 
+//Inicializo la base de datos de MongoDB
+initMongoDB()
+    .then(() => console.log('database connected') )
+    .catch((err) => console.log(err))
+
 const PORT = 8080
 
 //Levantamos el servidor
@@ -36,33 +42,26 @@ httpServer.on('error', error => {
 
 const socketServer = new Server(httpServer)
 
-//Me traigo los productos
-let products = JSON.parse(fs.readFileSync('./products.json', 'utf-8'))
-
 //Websocket
-socketServer.on("connection", (socket) => {
+socketServer.on("connection", async (socket) => {
     console.log(`Nuevo cliente conectado: ${socket.id}`)
 
-    socketServer.emit('array-productos', products)
-
+    //Envio los productos de la DB
+    socketServer.emit('array-productos', await productManager.getProducts())
+    
     //agrego producto
-    socket.on('new-product', (product) => {
-        if(products.length === 0){
-            product.id = 1
-        }else{
+    socket.on('new-product', async (product) => {
+        
+        await productManager.addProduct(product)
 
-            product.id = products.sort((a, b) => a.id - b.id)[products.length -1].id + 1
-        }
-        products.push(product)
-        fs.writeFileSync('./products.json', JSON.stringify(products))
-
-        socketServer.emit('array-productos', products)
+        socketServer.emit('array-productos', await productManager.getProducts())
     })
 
     //elimino producto
-    socket.on("deleteProduct", (id) => {
-        products = products.filter(p => p.id !== id);
-        fs.writeFileSync("./products.json", JSON.stringify(products));
-        socketServer.emit("array-productos", products);
+    socket.on("deleteProduct", async (id) => {
+        
+        await productManager.deleteById(id)
+
+        socketServer.emit("array-productos", await productManager.getProducts());
     });
 })
