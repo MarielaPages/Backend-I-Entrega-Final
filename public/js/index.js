@@ -6,6 +6,7 @@ const inputPrice = document.getElementById('price')
 const inputDescription = document.getElementById('description')
 const inputCode = document.getElementById('code')
 const inputStock = document.getElementById('stock')
+const inputCategory = document.getElementById('category')
 const deleteForm = document.getElementById('deleteForm')
 const deleteId = document.getElementById('deleteId')
 const products = document.getElementById('products')
@@ -19,8 +20,9 @@ form.onsubmit = (e) => {
     const description = inputDescription.value.trim()
     const code = inputCode.value
     const stock = inputStock.value
+    const category = inputCategory.value
 
-    socket.emit('new-product', {title, price, description, code, stock})
+    socket.emit('new-product', {title, price, description, code, stock, category})
 }
 
 socket.on('array-productos', (arrayProducts) => {

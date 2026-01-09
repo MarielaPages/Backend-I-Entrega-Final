@@ -2,12 +2,13 @@ import { ProductModel } from "../models/product-model.js"
 import { CartModel } from "../models/cart-model.js"
 
 export class Product{
-    constructor(title, description, price, code, stock){
+    constructor(title, description, price, code, stock, category){
         this.title = title
         this.description = description
         this.price = price
         this.code = code
         this.stock = stock
+        this.category = category
     }
 }
 
@@ -37,9 +38,16 @@ export class ProductManager{
         
     }
 
-    async getProducts(){
+    async getProducts(page=1, limit=10, category, sort){
         try{
-            return await this.model.find({}) 
+
+            const filter = category ? { category: category } : {}
+
+            let sortOrder = {}
+
+            if(sort) sortOrder.price = sort === 'asc' ? 1 : sort === 'desc' ? -1 : null
+
+            return await this.model.paginate(filter, {page, limit, sort: sortOrder}) 
         }catch(err){
             throw err
         }
@@ -117,50 +125,91 @@ export class CartManager{
 
     async addProductToCart(cid, pid, quantity){
 
-        try{
-
-
-            //leo los datos guardados en la db
-            let cartsArray = await this.model.find({}) 
+        try{ 
 
             //busco el carrito correspondiente al id pasado
-            let foundCart = cartsArray.find(item => item.id === cid)
+            const foundCart = await this.model.findById(cid)
+            if (!foundCart) throw new Error("Carrito no encontrado")
 
             //Dentro de products en cart busco el producto con el id pasado y si no existe, lo creo
-            let foundProduct = foundCart.products.find(item => item.product === pid)
+            let foundProduct = foundCart.products.find(item => item.product.toString() === pid)
             
-            //incializo una variable donde iran todos los productos del carrito correspondiente
-            let productsForNewQuantityInIdProduct
-
-            if(foundProduct !== undefined){
-                foundProduct.quantity = foundProduct.quantity + quantity
-
-                //la idea es que el objeto tiene la forma {product: id, quantity: quantity}
-
-                //Quito el producto para volver a guardarlo con su nueva cantidad
-                productsForNewQuantityInIdProduct = foundCart.products.filter(item => item.product !== pid)
-
-                productsForNewQuantityInIdProduct.push(foundProduct)
-
-            }else{
-                let newProductIfUndefined = {}
-                newProductIfUndefined.quantity = quantity 
-                newProductIfUndefined.product = pid
-
-                //Guardo el nuevo producto con su cantidad en la seccion de productos del carrito correspondiente
-                productsForNewQuantityInIdProduct = foundCart.products
-                productsForNewQuantityInIdProduct.push(newProductIfUndefined)
+            if (foundProduct) {
+                foundProduct.quantity += quantity
+            } else {
+                foundCart.products.push({
+                    product: pid,
+                    quantity
+                })
             }
 
-            let obj = {products: productsForNewQuantityInIdProduct, id:cid}
-
-            await this.model.findByIdAndUpdate(cid, obj, { new: true })
+            await foundCart.save()
+            return foundCart
             
         }catch(err){
             throw err
         }
 
+    }
 
+    async updateCart(cid, products) {
+        try {
+            return await this.model.findByIdAndUpdate(
+                cid,
+                { products },
+                { new: true }
+            )
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async updateProductQuantity(cid, pid, quantity) {
+        try {
+            const cart = await this.model.findById(cid)
+            if (!cart) throw new Error("Carrito no encontrado")
+
+            const product = cart.products.find(
+                p => p.product.toString() === pid
+            )
+
+            if (!product) throw new Error("Producto no encontrado")
+
+            product.quantity = quantity
+            await cart.save()
+
+            return cart
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async deleteProductFromCart(cid, pid) {
+        try {
+            const cart = await this.model.findById(cid)
+            if (!cart) throw new Error("Carrito no encontrado")
+
+            cart.products = cart.products.filter(
+                p => p.product.toString() !== pid
+            )
+
+            await cart.save()
+            return cart
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async clearCart(cid) {
+        try {
+            return await this.model.findByIdAndUpdate(
+                cid,
+                { products: [] },
+                { new: true }
+            )
+        } catch (error) {
+            throw error
+        }
     }
 
 }
