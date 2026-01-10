@@ -39,7 +39,7 @@ router.get('/:pid', async(req, res) => {
 
 router.post('/', async (req, res) => {
 
-    let product = new Product(req.body.title, req.body.description, req.body.price, req.body.code, req.body.stock)
+    let product = new Product(req.body.title, req.body.description, req.body.price, req.body.code, req.body.stock, req.body.category)
 
     await productManager.addProduct(product)
 
