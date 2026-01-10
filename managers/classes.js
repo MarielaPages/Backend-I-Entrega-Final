@@ -116,7 +116,7 @@ export class CartManager{
     async getCartById(id){
         try{
 
-            return await this.model.find({_id:id})
+            return await this.model.find({_id:id}).populate("products.product").lean()
 
         }catch(err){
             throw err
