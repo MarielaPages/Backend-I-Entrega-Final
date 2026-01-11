@@ -28,7 +28,7 @@ form.onsubmit = (e) => {
 socket.on('array-productos', (arrayProducts) => {
     let infoProducts = ''
 
-    arrayProducts.forEach(p => {
+    arrayProducts.docs.forEach(p => {
         infoProducts += `Title: ${p.title} - Price: $${p.price} <br/>`
     })
 
