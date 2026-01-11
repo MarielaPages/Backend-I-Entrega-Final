@@ -47,7 +47,7 @@ export class ProductManager{
 
             if(sort) sortOrder.price = sort === 'asc' ? 1 : sort === 'desc' ? -1 : null
 
-            return await this.model.paginate(filter, {page, limit, sort: sortOrder}) 
+            return await this.model.paginate(filter, {page, limit, sort: sortOrder, lean:true}) 
         }catch(err){
             throw err
         }
